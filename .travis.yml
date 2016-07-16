@@ -7,8 +7,9 @@ perl:
   - "5.16"
   - "5.14"
 
-services:
-  - mysql
+cache:
+  directories:
+    - $HOME/perl5/perlbrew/perls/$TRAVIS_PERL_VERSION/lib/site_perl/
 
 install:
   - echo $TRAVIS_PERL_VERSION
