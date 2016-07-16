@@ -13,6 +13,7 @@ cache:
 
 install:
   - echo $TRAVIS_PERL_VERSION
+  - env | grep PERL
   - cpanm --notest -v Dist::Zilla
   - dzil authordeps | cpanm --quiet --notest
   - cpanm --quiet --notest --installdeps .
