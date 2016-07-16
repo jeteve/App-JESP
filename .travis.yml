@@ -11,6 +11,7 @@ services:
   - mysql
 
 install:
+  - echo $TRAVIS_PERL_VERSION
   - cpanm --notest -v Dist::Zilla
   - dzil authordeps | cpanm --quiet --notest
   - cpanm --quiet --notest --installdeps .
