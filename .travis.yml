@@ -11,7 +11,7 @@ services:
   - mysql
 
 install:
-  - cpanm --notest --quiet Dist::Zilla
+  - cpanm --notest -v Dist::Zilla
   - dzil authordeps | cpanm --quiet --notest
   - cpanm --quiet --notest --installdeps .
 
