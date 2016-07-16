@@ -31,4 +31,5 @@ A copy of this licence is enclosed in this package.
 
 =cut
 
+__PACKAGE__->meta->make_immutable();
 1;
