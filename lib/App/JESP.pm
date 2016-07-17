@@ -2,6 +2,42 @@ package App::JESP;
 
 use Moose;
 
+use DBI;
+use DBIx::Simple;
+
+# Settings
+## DB Connection attrbutes.
+has 'dsn' => ( is => 'ro', isa => 'Str', required => 1 );
+has 'username' => ( is => 'ro', isa => 'Maybe[Str]', required => 1);
+has 'password' => ( is => 'ro', isa => 'Maybe[Str]', required => 1);
+## JESP Attributes
+has 'table_prefix' => ( is => 'ro', isa => 'Str', default => 'jesp_' );
+
+# Operational stuff
+has 'get_dbh' => ( is => 'ro', isa => 'CodeRef', default => sub{
+                       my ($self) = @_;
+                       return sub{
+                           return DBI->connect( $self->dsn(), $self->username(), $self->password() );
+                       };
+                   });
+
+has 'dbix_simple' => ( is => 'ro', isa => 'DBIx::Simple', lazy_build => 1);
+
+sub _build_dbix_simple{
+    my ($self) = @_;
+    my $dbh = $self->get_dbh()->();
+    return DBIx::Simple->connect($dbh);
+}
+
+sub install{
+    my ($self) = @_;
+}
+
+__PACKAGE__->meta->make_immutable();
+1;
+
+__END__
+
 =head1 NAME
 
 App::JESP - Just Enough SQL Patches
@@ -20,6 +56,61 @@ Or use from your own program:
 
 =cut
 
+=head1 MOTIVATIONS & DESIGN
+
+Over the years as a developer, I have used at least three ways of managing SQL patches.
+The ad-hoc way with a hand-rolled system which is painful to re-implement,
+the L<DBIx::Class::Migration> way which I didn't like at all, and more recently
+L<App::Sqitch> which I sort of like.
+
+All these systems somehow just manage to do the job, but unless they are very complicated (there
+are no limits to hand-rolled complications..) they all fail to provide a sensible
+way for a team of developers to work on database schema changes at the same time.
+
+So I decided the world needs yet another SQL patch management system that
+does what my team and I really really want.
+
+Here are some design principles this package is attempting to implement:
+
+=over
+
+=item Write your own SQL
+
+No funny SQL generated from code here. By definition, any ORM will always lag behind its
+target DBs' features. This means that counting on sofware to generate SQL statement from
+your ORM classes will always prevent you from truly using the full power of your DB of choice.
+
+With App::JESP, you have to write your own SQL for your DB, and this is a good thing.
+
+=item No version numbers
+
+App::JESP simply keep track of which ones of your named patches are applied to the DB.
+Your DB version is just that: The subset of patches that were applied to it. This participates
+in allowing several developers to work on different parts of the DB in parrallel.
+
+=item No fuss patch ordering
+
+The order in which patches are applied is important. But it is not important
+to the point of enforcing excatly the same order on every DB the patches are deployed to.
+App::JESP applies the named patches in the order it finds them in the plan, only taking
+into account the ones that have not been applied yet. This allows developer to work
+on their development DB and merge seemlessly patches from other developers.
+
+=item Programmable
+
+It's great to have a convenient command line tool to work and deploy patches, but maybe
+your development process, or your code layout is a bit different. If you use L<App::JESP>
+from Perl, it should be easy to embed and run it seemlessly yourself.
+
+=back
+
+=head1 METHODS
+
+=head2 install
+
+Installs or upgrades JESP in the database. This is idem potent.
+Note that the JESP meta table(s) will be all prefixed by B<$this->table_prefix()>.
+
 =head1 DEVELOPMENT
 
 =for html <a href="https://travis-ci.org/jeteve/App-JESP"><img src="https://travis-ci.org/jeteve/App-JESP.svg?branch=master"></a>
@@ -30,6 +121,3 @@ This software is released under the Artistic Licence by Jerome Eteve. Copyright 
 A copy of this licence is enclosed in this package.
 
 =cut
-
-__PACKAGE__->meta->make_immutable();
-1;
