@@ -9,6 +9,7 @@ perl:
 
 services:
   - mysql
+  - postgresql
 
 cache:
   directories:
@@ -21,6 +22,7 @@ install:
   - cpanm --notest -v Dist::Zilla
   - dzil authordeps | cpanm --quiet --notest
   - cpanm --notest Test::mysqld
+  - cpanm --notest Test::PostgreSQL
   - cpanm --quiet --notest --installdeps .
 
 script:

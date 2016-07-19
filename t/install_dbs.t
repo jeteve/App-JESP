@@ -5,6 +5,8 @@ use Test::Most;
 BEGIN{
     eval "use Test::mysqld";
     plan skip_all => "Test::mysqld is required for this test" if $@;
+    eval "use Test::PostgreSQL";
+    plan skip_all => "Test::PostgreSQL is required for this test" if $@;
 }
 
 use App::JESP;
@@ -27,6 +29,12 @@ my $mysql = Test::mysqld->new( my_cnf => {
 push @connection_params, { dsn => $mysql->dsn(),
                            password => '',
                            username => ''
+                       };
+
+my $pgsql = Test::PostgreSQL->new();
+push @connection_params, { dsn => $pgsql->dsn(),
+                           password => undef,
+                           username => 'postgres'
                        };
 
 foreach my $connect_params ( @connection_params ){
