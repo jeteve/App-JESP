@@ -4,6 +4,8 @@ use Moose;
 
 use DBI;
 use DBIx::Simple;
+use Log::Any qw/$log/;
+use SQL::Translator;
 
 # Settings
 ## DB Connection attrbutes.
@@ -11,26 +13,79 @@ has 'dsn' => ( is => 'ro', isa => 'Str', required => 1 );
 has 'username' => ( is => 'ro', isa => 'Maybe[Str]', required => 1);
 has 'password' => ( is => 'ro', isa => 'Maybe[Str]', required => 1);
 ## JESP Attributes
-has 'table_prefix' => ( is => 'ro', isa => 'Str', default => 'jesp_' );
+has 'prefix' => ( is => 'ro', isa => 'Str', default => 'jesp_' );
 
 # Operational stuff
 has 'get_dbh' => ( is => 'ro', isa => 'CodeRef', default => sub{
                        my ($self) = @_;
                        return sub{
-                           return DBI->connect( $self->dsn(), $self->username(), $self->password() );
+                           return DBI->connect( $self->dsn(), $self->username(), $self->password(), { RaiseError => 1, AutoCommit => 1 });
                        };
                    });
 
 has 'dbix_simple' => ( is => 'ro', isa => 'DBIx::Simple', lazy_build => 1);
+has 'patches_table_name' => ( is => 'ro', isa => 'Str' , lazy_build => 1);
+has 'meta_patches' => ( is => 'ro', isa => 'ArrayRef[HashRef]',
+                        lazy_build => 1 );
 
 sub _build_dbix_simple{
     my ($self) = @_;
     my $dbh = $self->get_dbh()->();
-    return DBIx::Simple->connect($dbh);
+    my $db =  DBIx::Simple->connect($dbh);
+}
+
+sub _build_patches_table_name{
+    my ($self) = @_;
+    return $self->prefix().'patch';
+}
+
+# Building the meta patches, in SQLite compatible format.
+sub _build_meta_patches{
+    my ($self) = @_;
+    return [
+        { id => $self->prefix().'meta_zero', sql => 'CREATE TABLE '.$self->patches_table_name().' ( id VARCHAR(512) NOT NULL PRIMARY KEY, applied_datetime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP );' }
+    ];
 }
 
 sub install{
     my ($self) = @_;
+
+    # First try to select from $self->patches_table_name
+    my $dbh = $self->dbix_simple->dbh();
+    my $patches = eval{ $self->dbix_simple()->query('SELECT '.$dbh->quote_identifier('id').' FROM '.$dbh->quote_identifier($self->patches_table_name)); };
+    if( my $err = $@ || $patches->isa('DBIx::Simple::Dummy') ){
+        $log->info("Innitiating meta tables");
+        $self->_apply_meta_patch( $self->meta_patches()->[0] );
+    }
+    $log->info("Uprading meta tables");
+    # Select all meta patches and make sure all of mine are applied.
+    my $applied_patches = { $self->dbix_simple()
+                                ->select( $self->patches_table_name() , [ 'id', 'applied_datetime' ] , { id => { -like => $self->prefix().'meta_%' } } )
+                                ->map_hashes('id')
+                            };
+    foreach my $meta_patch ( @{ $self->meta_patches() } ){
+        if( $applied_patches->{$meta_patch->{id}} ){
+            $log->debug("Patch ".$meta_patch->{id}." already applied on ".$applied_patches->{$meta_patch->{id}}->{applied_datetime});
+            next;
+        }
+        $self->_apply_meta_patch( $meta_patch );
+    }
+    $log->info("Done upgrading meta tables");
+    return 1;
+}
+
+sub _apply_meta_patch{
+    my ($self, $meta_patch) = @_;
+    $log->debug("Appliyng meta patch ".$meta_patch->{id});
+
+    my $sql = $meta_patch->{sql};
+    my $db = $self->dbix_simple();
+
+    $log->debug("Doing ".$sql);
+    $db->begin_work();
+    $db->dbh->do( $sql ) or die "Cannot do '$sql':".$db->dbh->errstr()."\n";
+    $db->insert( $self->patches_table_name() , { id => $meta_patch->{id} } );
+    $db->commit();
 }
 
 __PACKAGE__->meta->make_immutable();
@@ -109,7 +164,7 @@ from Perl, it should be easy to embed and run it seemlessly yourself.
 =head2 install
 
 Installs or upgrades JESP in the database. This is idem potent.
-Note that the JESP meta table(s) will be all prefixed by B<$this->table_prefix()>.
+Note that the JESP meta table(s) will be all prefixed by B<$this->prefix()>.
 
 =head1 DEVELOPMENT
 
