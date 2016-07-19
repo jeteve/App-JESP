@@ -7,6 +7,9 @@ perl:
   - "5.16"
   - "5.14"
 
+services:
+  - mysql
+
 cache:
   directories:
     - $HOME/perl5/perlbrew/perls/$TRAVIS_PERL_VERSION/lib/site_perl/
@@ -17,6 +20,7 @@ install:
   - env | grep PERL
   - cpanm --notest -v Dist::Zilla
   - dzil authordeps | cpanm --quiet --notest
+  - cpanm --notest Test::mysqld
   - cpanm --quiet --notest --installdeps .
 
 script:

@@ -5,7 +5,6 @@ use Moose;
 use DBI;
 use DBIx::Simple;
 use Log::Any qw/$log/;
-use SQL::Translator;
 
 # Settings
 ## DB Connection attrbutes.
