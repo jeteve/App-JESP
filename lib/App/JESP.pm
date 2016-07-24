@@ -11,6 +11,7 @@ use Log::Any qw/$log/;
 has 'dsn' => ( is => 'ro', isa => 'Str', required => 1 );
 has 'username' => ( is => 'ro', isa => 'Maybe[Str]', required => 1);
 has 'password' => ( is => 'ro', isa => 'Maybe[Str]', required => 1);
+has 'home' => ( is => 'ro', isa => 'Str', required => 1 );
 ## JESP Attributes
 has 'prefix' => ( is => 'ro', isa => 'Str', default => 'jesp_' );
 
@@ -27,6 +28,7 @@ has 'patches_table_name' => ( is => 'ro', isa => 'Str' , lazy_build => 1);
 has 'meta_patches' => ( is => 'ro', isa => 'ArrayRef[HashRef]',
                         lazy_build => 1 );
 
+
 sub _build_dbix_simple{
     my ($self) = @_;
     my $dbh = $self->get_dbh()->();
@@ -42,7 +44,7 @@ sub _build_patches_table_name{
 sub _build_meta_patches{
     my ($self) = @_;
     return [
-        { id => $self->prefix().'meta_zero', sql => 'CREATE TABLE '.$self->patches_table_name().' ( id VARCHAR(512) NOT NULL PRIMARY KEY, applied_datetime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP );' }
+        { id => $self->prefix().'meta_zero', sql => 'CREATE TABLE '.$self->patches_table_name().' ( id VARCHAR(512) NOT NULL PRIMARY KEY, applied_datetime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP );' }
     ];
 }
 
@@ -71,6 +73,21 @@ sub install{
     }
     $log->info("Done upgrading meta tables");
     return 1;
+}
+
+sub deploy{
+    my ($self) = @_;
+
+    my $patches = $self->plan()->patches();
+    my $applied_patches = { $self->dbix_simple()
+                                ->select( $self->patches_table_name() , [ 'id', 'applied_datetime' ] )
+                                ->map_hashes('id')
+                            };
+    foreach my $patch ( @{$patches} ){
+        unless( $applied_patches->{$patch->id()} ){
+            $log->info("Patch ".$patch->id()." not applied yet. Applying it");
+        }
+    }
 }
 
 sub _apply_meta_patch{
@@ -170,6 +187,11 @@ from Perl, it should be easy to embed and run it seemlessly yourself.
 
 Installs or upgrades the JESP meta tables in the database. This is idem potent.
 Note that the JESP meta table(s) will be all prefixed by B<$this->prefix()>.
+
+=head2 deploy
+
+Deploys the unapplied patches from the plan in the database and record
+the new DB state in the meta schema. Dies if the meta schema is not installed (see install method).
 
 =head1 DEVELOPMENT
 

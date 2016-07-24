@@ -5,7 +5,7 @@ use App::JESP;
 
 # use Log::Any::Adapter qw/Stderr/;
 
-ok( my $jesp = App::JESP->new({ dsn => 'dbi:SQLite:dbname=:memory:', username => undef, password => undef }) );
+ok( my $jesp = App::JESP->new({ dsn => 'dbi:SQLite:dbname=:memory:', username => undef, password => undef, home => 'bla' }) );
 ok( $jesp->install(), "Ok can install JESP in the given Database");
 
 my @installed_patches  = $jesp->dbix_simple()->select( $jesp->patches_table_name() )->hashes();

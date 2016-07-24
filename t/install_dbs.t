@@ -15,7 +15,7 @@ use File::Spec;
 # use Log::Any::Adapter qw/Stderr/;
 
 # First something with SQLite.
-my @connection_params = ({ dsn => 'dbi::SQLite:dbname=:memory:',
+my @connection_params = ({ dsn => 'dbi:SQLite:dbname=:memory:',
                            username => undef,
                            password => undef
                        });
@@ -40,7 +40,11 @@ push @connection_params, { dsn => $pgsql->dsn(),
 foreach my $connect_params ( @connection_params ){
     diag("Testing ".$connect_params->{dsn} );
 
-    ok( my $jesp = App::JESP->new({ dsn => 'dbi:SQLite:dbname=:memory:', username => undef, password => undef }) );
+    ok( my $jesp = App::JESP->new({ dsn => $connect_params->{dsn},
+                                    username => $connect_params->{username},
+                                    password => $connect_params->{postgres},
+                                    home => 'bla'
+                                }) );
     ok( $jesp->install(), "Ok can install JESP in the given Database");
     my @installed_patches  = $jesp->dbix_simple()->select( $jesp->patches_table_name() )->hashes();
 
