@@ -244,11 +244,47 @@ Patches MUST have a unique ID in all the plan, and they can either
 contain raw SQL (SQL key), or point to a file of your choice (in the JESP home)
 itself containing the SQL.
 
+You are encouraged to look in L<https://github.com/jeteve/App-JESP/tree/master/t> for examples.
+
 =head1 COMPATIBILITY
 
 Compatibility of the meta-schema with SQLite, MySQL and PostgreSQL is guaranteed through automated testing.
 To see which versions are actually tested, look at the CI build:
 L<https://travis-ci.org/jeteve/App-JESP/>
+
+=head1 DRIVERS
+
+This comes with the following built-in drivers:
+
+=head2 SQLite
+
+Just in case. Note that your patches will be executed in the same connection
+this uses to manage the metadata.
+
+=head2 mysql
+
+This will use the mysql executable on the disk (will look for it in PATH)
+to execute your patches, exactly like you would do on the command line.
+
+=head2 Pg
+
+This will use a new connection to the Database to execute the patches.
+This is to allow you using BEGIN ; COMMIT; to make your patch transactional
+without colliding with the Meta data management transaction.
+
+=head2 Your own driver.
+
+Should you want to write your own driver, simply extend L<App::JESP::Driver>
+and implement any method you like (most likely you will want apply_sql).
+
+To use your driver, simply give its class to the constuctor:
+
+  my $jesp = App::JESP->new({ .., driver_class => 'My::App::JESP::Driver::SpecialDB' });
+
+Or if you prefer to build an instance yourself:
+
+  my $jesp;
+  $jesp = App::JESP->new({ .., driver => My::App::JESP::Driver::SpecialDB->new({ jesp => $jesp,  ... ) });
 
 =head1 MOTIVATIONS & DESIGN
 

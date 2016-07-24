@@ -1,4 +1,4 @@
-
+BEGIN;
 --
 -- Name: payment_p2007_01_customer_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
@@ -213,3 +213,5 @@ ALTER TABLE ONLY store
 
 ALTER TABLE ONLY store
     ADD CONSTRAINT store_manager_staff_id_fkey FOREIGN KEY (manager_staff_id) REFERENCES staff(staff_id) ON UPDATE CASCADE ON DELETE RESTRICT;
+
+COMMIT;

@@ -18,6 +18,7 @@ See superclass.
 
 sub apply_sql{
     my ($self, $sql) = @_;
+    # note that we reuse the same dbh as the application.
     my $dbh = $self->jesp()->dbix_simple()->dbh();
     local $dbh->{sqlite_allow_multiple_statements} = 1;
     return $dbh->do( $sql ) // confess( $dbh->errstr() );
