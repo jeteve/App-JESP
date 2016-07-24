@@ -168,13 +168,14 @@ CREATE TABLE film_category (
 -- earlier version, then consider upgrading (recommended) or 
 -- changing InnoDB to MyISAM as the film_text engine
 --
+-- Note from @jeteve : In travis, mysql is version
+--
 
 CREATE TABLE film_text (
   film_id SMALLINT NOT NULL,
   title VARCHAR(255) NOT NULL,
   description TEXT,
   PRIMARY KEY  (film_id),
-  FULLTEXT KEY idx_title_description (title,description)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
