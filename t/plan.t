@@ -12,7 +12,7 @@ use App::JESP;
                                 password => undef,
                                 home => 'bla'
                             });
-    dies_ok(sub{ my $plan = $jesp->plan() } , qr/does not exists/ );
+    throws_ok(sub{ my $plan = $jesp->plan() } , qr/does not exists/ );
 }
 
 {

@@ -23,7 +23,11 @@ has 'prefix' => ( is => 'ro', isa => 'Str', default => 'jesp_' );
 has 'get_dbh' => ( is => 'ro', isa => 'CodeRef', default => sub{
                        my ($self) = @_;
                        return sub{
-                           return DBI->connect( $self->dsn(), $self->username(), $self->password(), { RaiseError => 1, AutoCommit => 1 });
+                           return DBI->connect( $self->dsn(), $self->username(), $self->password(),
+                                                { RaiseError => 1,
+                                                  PrintError => 0,
+                                                  AutoCommit => 1
+                                              });
                        };
                    });
 
@@ -94,15 +98,27 @@ sub deploy{
     my ($self) = @_;
 
     my $patches = $self->plan()->patches();
-    my $applied_patches = { $self->dbix_simple()
-                                ->select( $self->patches_table_name() , [ 'id', 'applied_datetime' ] )
-                                ->map_hashes('id')
-                            };
-    foreach my $patch ( @{$patches} ){
-        unless( $applied_patches->{$patch->id()} ){
-            $log->info("Patch ".$patch->id()." not applied yet. Applying it");
-        }
+    my $applied_patches_result = eval{
+        $self->dbix_simple()
+            ->select( $self->patches_table_name() , [ 'id', 'applied_datetime' ] );
+    };
+    if( my $err = $@ || $applied_patches_result->isa('DBIx::Simple::Dummy')  ){
+        $log->debug( $err || $self->dbix_simple()->error() );
+        die "Error querying meta schema. Did you forget to run 'install'?";
     }
+
+    my $applied_patches = { $applied_patches_result->map_hashes('id') };
+
+    my $applied = 0;
+    foreach my $patch ( @{$patches} ){
+        if( my $applied_patch = $applied_patches->{$patch->id()}){
+            $log->debug("Patch ".$patch->id()." has already been applied on ".$applied_patch->{applied_datetime});
+            next;
+        }
+        $log->info("Patch ".$patch->id()." not applied yet. Applying it");
+        $applied++;
+    }
+    return $applied;
 }
 
 sub _apply_meta_patch{
@@ -236,10 +252,22 @@ from Perl, it should be easy to embed and run it seemlessly yourself.
 Installs or upgrades the JESP meta tables in the database. This is idem potent.
 Note that the JESP meta table(s) will be all prefixed by B<$this->prefix()>.
 
+Returns true on success. Will die on error.
+
+Usage:
+
+  $this->install();
+
 =head2 deploy
 
 Deploys the unapplied patches from the plan in the database and record
 the new DB state in the meta schema. Dies if the meta schema is not installed (see install method).
+
+Returns the number of patches applied.
+
+Usage:
+
+  print "Applied ".$this->deploy()." patches";
 
 =head1 DEVELOPMENT
 
