@@ -4,6 +4,7 @@ use Moose;
 
 use App::JESP::Plan;
 
+use Class::Load;
 use DBI;
 use DBIx::Simple;
 use Log::Any qw/$log/;
@@ -18,6 +19,7 @@ has 'password' => ( is => 'ro', isa => 'Maybe[Str]', required => 1);
 has 'home' => ( is => 'ro', isa => 'Str', required => 1 );
 ## JESP Attributes
 has 'prefix' => ( is => 'ro', isa => 'Str', default => 'jesp_' );
+has 'driver_class' => ( is => 'ro', isa => 'Str', lazy_build => 1);
 
 # Operational stuff
 has 'get_dbh' => ( is => 'ro', isa => 'CodeRef', default => sub{
@@ -38,6 +40,21 @@ has 'meta_patches' => ( is => 'ro', isa => 'ArrayRef[HashRef]',
 
 
 has 'plan' => ( is => 'ro', isa => 'App::JESP::Plan', lazy_build => 1);
+has 'driver' => ( is => 'ro', isa => 'App::JESP::Driver', lazy_build => 1 );
+
+sub _build_driver{
+    my ($self) = @_;
+    return $self->driver_class()->new({ jesp => $self });
+}
+
+sub _build_driver_class{
+    my ($self) = @_;
+    my $db_name = $self->dbix_simple()->dbh()->{Driver}->{Name};
+    my $driver_class = 'App::JESP::Driver::'.$db_name;
+    $log->info("Loading driver ".$driver_class);
+    Class::Load::load_class( $driver_class );
+    return $driver_class;
+}
 
 sub _build_plan{
     my ($self) = @_;
@@ -104,6 +121,7 @@ sub install{
 
 sub deploy{
     my ($self) = @_;
+    $log->info("DEPLOYING DB Patches");
 
     my $db = $self->dbix_simple();
     my $patches = $self->plan()->patches();
@@ -126,6 +144,8 @@ sub deploy{
             $db->begin_work();
             $db->insert( $self->patches_table_name() , { id => $patch->id() } );
 
+            $self->driver()->apply_patch( $patch );
+
             $db->commit();
         };
         if( my $err = $@ ){
@@ -135,6 +155,7 @@ sub deploy{
         };
         $applied++;
     }
+    $log->info("DONE Deploying DB Patches");
     return $applied;
 }
 
@@ -278,6 +299,14 @@ simple, to allow for easy repairs if things go wrong.
 It's great to have a convenient command line tool to work and deploy patches, but maybe
 your development process, or your code layout is a bit different. If you use L<App::JESP>
 from Perl, it should be easy to embed and run it seemlessly yourself.
+
+=item What about reverting?
+
+Your live DB is not the place to test your changes. Your DB at <My Software> Version N should
+be compatible with Code at <My Software> Version N-1. You are responsible for testing that.
+
+We'll probably implement reverting in the future, but for now we assume you
+know what you're doing when you patch your DB.
 
 =back
 
