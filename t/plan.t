@@ -25,7 +25,7 @@ use App::JESP;
     ok( my $plan = $jesp->plan() );
 
     ok( my $patches = $plan->patches() );
-    is( scalar( @{$patches} ) , 2 , "2 test patches");
+    is( scalar( @{$patches} ) , 3 , "3 test patches");
     foreach my $patch ( @{$patches} ){
         ok( $patch->sql() , "Ok got SQL" );
     }
