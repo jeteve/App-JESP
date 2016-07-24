@@ -10,6 +10,7 @@ use Log::Any qw/$log/;
 use Data::Dumper;
 use DBI;
 use DBD::mysql;
+use String::ShellQuote;
 
 =head1 NAME
 
@@ -57,22 +58,22 @@ sub apply_sql{
     push @cmd , '-B'; # This is a batch command. We dont want interactive at all.
 
     if( my $user = $properties->{user} ){
-        push @cmd , ( '-u' , $user );
+        push @cmd , ( '-u' , String::ShellQuote::shell_quote( $user ));
     }
     if( my $database = $properties->{database} ){
-        push @cmd , ( '-D' , $database );
+        push @cmd , ( '-D' , String::ShellQuote::shell_quote( $database ));
     }
     if( my $host = $properties->{host} ){
-        push @cmd , ( '-h' , $host );
+        push @cmd , ( '-h' , String::ShellQuote::shell_quote( $host ));
     }
     if( my $port = $properties->{port} ){
-        push @cmd , ( '-P' , $port );
+        push @cmd , ( '-P' , String::ShellQuote::shell_quote( $port ));
     }
     if( my $mysql_socket = $properties->{mysql_socket} ){
-        push @cmd , ( '-S' , $mysql_socket );
+        push @cmd , ( '-S' , String::ShellQuote::shell_quote( $mysql_socket ));
     }
     if( my $password = $properties->{password} ){
-        push @cmd , ( '-p', $password );
+        push @cmd , ( '-p'.String::ShellQuote::shell_quote( $password ));
     }
 
 
