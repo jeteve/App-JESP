@@ -110,6 +110,12 @@ Or use from your own program:
 
 =cut
 
+=head1 COMPATIBILITY
+
+Compatibility of the meta-schema with SQLite, MySQL and PostgreSQL is guaranteed through automated testing.
+To see which versions are actually tested, look at the CI build:
+L<https://travis-ci.org/jeteve/App-JESP/>
+
 =head1 MOTIVATIONS & DESIGN
 
 Over the years as a developer, I have used at least three ways of managing SQL patches.
@@ -162,7 +168,7 @@ from Perl, it should be easy to embed and run it seemlessly yourself.
 
 =head2 install
 
-Installs or upgrades JESP in the database. This is idem potent.
+Installs or upgrades the JESP meta tables in the database. This is idem potent.
 Note that the JESP meta table(s) will be all prefixed by B<$this->prefix()>.
 
 =head1 DEVELOPMENT
