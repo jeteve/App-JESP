@@ -79,13 +79,15 @@ sub apply_sql{
     my $on_stdout = sub{
         $log->info( @_ );
     };
+    my @stderr;
     my $on_stderr = sub{
         $log->warn( @_ );
+        push @stderr , @_;
     };
 
     # Outside testing, be verbose.
     local $ENV{IPCRUNDEBUG} = 'basic' unless( $ENV{AUTOMATED_TESTING} || $ENV{HARNESS_ACTIVE} );
-    IPC::Run::run( \@cmd, \$sql , $on_stdout , $on_stderr ) or die join(' ', @cmd).": $?\n";
+    IPC::Run::run( \@cmd, \$sql , $on_stdout , $on_stderr ) or die join(' ', @cmd).": $? : ".join("\n", @stderr )."\n";
     $log->info("Done");
 }
 
