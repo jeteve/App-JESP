@@ -1,6 +1,7 @@
 {
     "patches": [
         { "id":"foobartable", "sql": "CREATE TABLE foobar(id INT PRIMARY KEY)"},
-        { "id":"foobar_more", "file": "patches/morefoobar.sql" }
+        { "id":"foobar_more", "file": "patches/morefoobar.sql" },
+        { "id":"customertrigger", "file": "patches/customertrigger.sql" }
     ]
 }
