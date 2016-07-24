@@ -33,7 +33,6 @@ is( $jesp->deploy(), 0, "Ok applied 0 patches on the second call");
     $jesp->dbix_simple()->insert('customer', { cust_id => 123 , cust_name => 'Armand' , cust_addr => 'Rue de la mouffette' });
     {
         my $hashes = $jesp->dbix_simple()->select( 'customer_address' , [ 'cust_id', 'cust_addr' ] )->hashes();
-        use DDP;
         is( $hashes->[0]->{cust_addr} , 'Rue de la mouffette' );
     }
     {
