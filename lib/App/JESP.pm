@@ -2,9 +2,13 @@ package App::JESP;
 
 use Moose;
 
+use App::JESP::Plan;
+
 use DBI;
 use DBIx::Simple;
 use Log::Any qw/$log/;
+
+use File::Spec;
 
 # Settings
 ## DB Connection attrbutes.
@@ -28,6 +32,17 @@ has 'patches_table_name' => ( is => 'ro', isa => 'Str' , lazy_build => 1);
 has 'meta_patches' => ( is => 'ro', isa => 'ArrayRef[HashRef]',
                         lazy_build => 1 );
 
+
+has 'plan' => ( is => 'ro', isa => 'App::JESP::Plan', lazy_build => 1);
+
+sub _build_plan{
+    my ($self) = @_;
+    my $file = File::Spec->catfile( $self->home(), 'plan.json' );
+    unless( -e -r $file ){
+        die "File $file does not exists or is not readable\n";
+    }
+    return App::JESP::Plan->new({ file => $file, jesp => $self });
+}
 
 sub _build_dbix_simple{
     my ($self) = @_;
@@ -119,13 +134,36 @@ App::JESP - Just Enough SQL Patches
 
 Use the command line utility:
 
-  jesp
+  jesp --home path/to/jesphome
 
 Or use from your own program:
 
-  my $jesp = App::JESP->new({ ... });
+  my $jesp = App::JESP->new({ home => 'path/to/jesphome' });
 
 =cut
+
+=head1 CONFIGURATION
+
+All JESP configuration must live in a JESP home directory.
+
+This home directory must contain a plan.json file, containing the patching
+plan for your DB. See plan.json section below for the format of this file.
+
+=head2 plan.json
+
+This file MUST live in your JESP home directory. It has to contain
+a json datastructure like this:
+
+  {
+    "patches": [
+        { "id":"foobartable", "sql": "CREATE TABLE foobar(id INT PRIMARY KEY)"},
+        { "id":"foobar_more", "file": "patches/morefoobar.sql" }
+    ]
+  }
+
+Patches MUST have a unique ID in all the plan, and they can either
+contain raw SQL (SQL key), or point to a file of your choice (in the JESP home)
+itself containing the SQL.
 
 =head1 COMPATIBILITY
 
@@ -153,7 +191,7 @@ Here are some design principles this package is attempting to implement:
 
 =item Write your own SQL
 
-No funny SQL generated from code here. By definition, any ORM will always lag behind its
+No funny SQL generated from code here. By nature, any ORM will always lag behind its
 target DBs' features. This means that counting on sofware to generate SQL statement from
 your ORM classes will always prevent you from truly using the full power of your DB of choice.
 
@@ -172,6 +210,16 @@ to the point of enforcing excatly the same order on every DB the patches are dep
 App::JESP applies the named patches in the order it finds them in the plan, only taking
 into account the ones that have not been applied yet. This allows developer to work
 on their development DB and merge seemlessly patches from other developers.
+
+=item JSON Based
+
+This is the 21st century, and I feel like I shouldn't invent my own file format.
+This uses JSON like everything else.
+
+=item Simple but complex things allowed.
+
+You will find no complex feature in App::JESP, and we pledge to keep the meta schema
+simple, to allow for easy repairs if things go wrong.
 
 =item Programmable
 

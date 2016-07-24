@@ -3,6 +3,8 @@
 
 requires 'DBI', '>= 1.636';
 requires 'DBIx::Simple', '>= 1.35';
+requires 'File::Spec';
+requires 'JSON';
 requires 'Log::Any', '>= 1.040';
 requires 'Moose' , '>= 2.1801';
 requires 'SQL::Abstract', '>= 1.81';
