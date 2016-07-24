@@ -72,8 +72,16 @@ sub install{
 
     # First try to select from $self->patches_table_name
     my $dbh = $self->dbix_simple->dbh();
-    my $patches = eval{ $self->dbix_simple()->query('SELECT '.$dbh->quote_identifier('id').' FROM '.$dbh->quote_identifier($self->patches_table_name)); };
-    if( my $err = $@ || $patches->isa('DBIx::Simple::Dummy') ){
+    my $patches = eval{
+        $self->_protect_select(
+            sub{ $self->dbix_simple()->query('SELECT '.$dbh->quote_identifier('id').' FROM '.$dbh->quote_identifier($self->patches_table_name)); },
+            "CANNOT_SELECT_FROM_META");
+    };
+    if( my $err = $@ ){
+        unless( $err eq "CANNOT_SELECT_FROM_META\n" ){
+            $log->critical("Unexpected error from _protect_select. Run again in verbose mode.");
+            die $err;
+        }
         $log->info("Innitiating meta tables");
         $self->_apply_meta_patch( $self->meta_patches()->[0] );
     }
@@ -97,15 +105,13 @@ sub install{
 sub deploy{
     my ($self) = @_;
 
+    my $db = $self->dbix_simple();
     my $patches = $self->plan()->patches();
-    my $applied_patches_result = eval{
-        $self->dbix_simple()
-            ->select( $self->patches_table_name() , [ 'id', 'applied_datetime' ] );
-    };
-    if( my $err = $@ || $applied_patches_result->isa('DBIx::Simple::Dummy')  ){
-        $log->debug( $err || $self->dbix_simple()->error() );
-        die "Error querying meta schema. Did you forget to run 'install'?";
-    }
+
+    my $applied_patches_result = $self->_protect_select(
+        sub{
+            $db->select( $self->patches_table_name() , [ 'id', 'applied_datetime' ] );
+        }, "ERROR querying meta schema. Did you forget to run 'install'?");
 
     my $applied_patches = { $applied_patches_result->map_hashes('id') };
 
@@ -116,9 +122,32 @@ sub deploy{
             next;
         }
         $log->info("Patch ".$patch->id()." not applied yet. Applying it");
+        eval{
+            $db->begin_work();
+            $db->insert( $self->patches_table_name() , { id => $patch->id() } );
+
+            $db->commit();
+        };
+        if( my $err = $@ ){
+            $log->error("Got error $err. ROLLING BACK");
+            $db->rollback();
+            die "ERROR APPLYING PATCH ".$patch->id().": $err. ABORTING\n";
+        };
         $applied++;
     }
     return $applied;
+}
+
+# Runs the code to return a DBIx::Simple::Result
+# or die with the given error message (for humans)
+sub _protect_select{
+    my ( $self, $code , $message) = @_;
+    my $result = eval{ $code->(); };
+    if( my $err = $@ || $result->isa('DBIx::Simple::Dummy')  ){
+        $log->debug("Error doing select: ".(  $err || $self->dbix_simple()->error() ) );
+        die $message."\n";
+    }
+    return $result;
 }
 
 sub _apply_meta_patch{
@@ -152,9 +181,16 @@ Use the command line utility:
 
   jesp --home path/to/jesphome
 
-Or use from your own program:
+Or use from your own program (in Perl):
 
-  my $jesp = App::JESP->new({ home => 'path/to/jesphome' });
+  my $jesp = App::JESP->new({ home => 'path/to/jesphome',
+                              dsn => ...,
+                              username => ...,
+                              password => ...
+                            });
+
+  $jsep->install();
+  $jesp->deploy();
 
 =cut
 
