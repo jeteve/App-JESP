@@ -28,7 +28,7 @@ has 'get_dbh' => ( is => 'ro', isa => 'CodeRef', default => sub{
                            return DBI->connect( $self->dsn(), $self->username(), $self->password(),
                                                 { RaiseError => 1,
                                                   PrintError => 0,
-                                                  AutoCommit => 1
+                                                  AutoCommit => 1,
                                               });
                        };
                    });
@@ -143,9 +143,7 @@ sub deploy{
         eval{
             $db->begin_work();
             $db->insert( $self->patches_table_name() , { id => $patch->id() } );
-
             $self->driver()->apply_patch( $patch );
-
             $db->commit();
         };
         if( my $err = $@ ){
@@ -180,10 +178,17 @@ sub _apply_meta_patch{
     my $db = $self->dbix_simple();
 
     $log->debug("Doing ".$sql);
-    $db->begin_work();
-    $db->dbh->do( $sql ) or die "Cannot do '$sql':".$db->dbh->errstr()."\n";
-    $db->insert( $self->patches_table_name() , { id => $meta_patch->{id} } );
-    $db->commit();
+    eval{
+        $db->begin_work();
+        $db->dbh->do( $sql ) or die "Cannot do '$sql':".$db->dbh->errstr()."\n";
+        $db->insert( $self->patches_table_name() , { id => $meta_patch->{id} } );
+        $db->commit();
+    };
+    if( my $err = $@ ){
+        $log->error("Got error $err. ROLLING BACK");
+        $db->rollback();
+        die "ERROR APPLYING META PATCH ".$meta_patch->{id}.": $err. ABORTING\n";
+    };
 }
 
 __PACKAGE__->meta->make_immutable();
