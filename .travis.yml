@@ -22,6 +22,7 @@ install:
   - cpanm --notest -v Dist::Zilla
   - dzil authordeps | cpanm --quiet --notest
   - cpanm --notest Test::mysqld
+  - cpanm --notest Net::EmptyPort
   - cpanm --notest Test::PostgreSQL
   - cpanm --quiet --notest --installdeps .
 

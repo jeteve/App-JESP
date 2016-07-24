@@ -136,10 +136,10 @@ sub deploy{
     my $applied = 0;
     foreach my $patch ( @{$patches} ){
         if( my $applied_patch = $applied_patches->{$patch->id()}){
-            $log->debug("Patch ".$patch->id()." has already been applied on ".$applied_patch->{applied_datetime});
+            $log->debug("Patch '".$patch->id()."' has already been applied on ".$applied_patch->{applied_datetime});
             next;
         }
-        $log->info("Patch ".$patch->id()." not applied yet. Applying it");
+        $log->info("Patch '".$patch->id()."' not applied yet");
         eval{
             $db->begin_work();
             $db->insert( $self->patches_table_name() , { id => $patch->id() } );
@@ -153,6 +153,7 @@ sub deploy{
             $db->rollback();
             die "ERROR APPLYING PATCH ".$patch->id().": $err. ABORTING\n";
         };
+        $log->info("Patch '".$patch->id()."' applied successfully");
         $applied++;
     }
     $log->info("DONE Deploying DB Patches");

@@ -8,9 +8,16 @@ Use the command line utility:
 
     jesp --home path/to/jesphome
 
-Or use from your own program:
+Or use from your own program (in Perl):
 
-    my $jesp = App::JESP->new({ home => 'path/to/jesphome' });
+    my $jesp = App::JESP->new({ home => 'path/to/jesphome',
+                                dsn => ...,
+                                username => ...,
+                                password => ...
+                              });
+
+    $jsep->install();
+    $jesp->deploy();
 
 # CONFIGURATION
 
@@ -94,6 +101,14 @@ Here are some design principles this package is attempting to implement:
     It's great to have a convenient command line tool to work and deploy patches, but maybe
     your development process, or your code layout is a bit different. If you use [App::JESP](https://metacpan.org/pod/App::JESP)
     from Perl, it should be easy to embed and run it seemlessly yourself.
+
+- What about reverting?
+
+    Your live DB is not the place to test your changes. Your DB at <My Software> Version N should
+    be compatible with Code at <My Software> Version N-1. You are responsible for testing that.
+
+    We'll probably implement reverting in the future, but for now we assume you
+    know what you're doing when you patch your DB.
 
 # METHODS
 

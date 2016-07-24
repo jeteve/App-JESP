@@ -28,7 +28,7 @@ sub apply_patch{
     my ($self, $patch) = @_;
     $log->info("Applying patch ".$patch->id());
     if( my $sql = $patch->sql() ){
-        $log->debug("Patch is SQL='$sql'");
+        $log->trace("Patch is SQL='$sql'");
         return $self->apply_sql( $sql );
     }
 }
