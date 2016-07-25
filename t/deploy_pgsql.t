@@ -24,8 +24,18 @@ is( $jesp->deploy(), 2, "Ok applied 2 patches");
 is( $jesp->deploy(), 0, "Ok applied 0 patches on the second call");
 
 # Now let's insert one country. This should work just fine.
-$jesp->dbix_simple()->insert('country', { country => 'Groland' });
-my $hashes = $jesp->dbix_simple()->select( 'country' , [ 'country' ] )->hashes();
-is( $hashes->[0]->{country} , 'Groland' );
+{
+    $jesp->dbix_simple()->insert('country', { country => 'Groland' });
+    my $hashes = $jesp->dbix_simple()->select( 'country' , [ 'country' ] )->hashes();
+    is( $hashes->[0]->{country} , 'Groland' );
+}
+
+# Now let's insert something that was defined at the very end of the last patch.
+# this should also work just fine.
+{
+    $jesp->dbix_simple()->insert('somecrazytable', { id => 1 ,name => 'Phileston' });
+    my $hashes = $jesp->dbix_simple()->select( 'somecrazytable' , [ 'name' ] )->hashes();
+    is( $hashes->[0]->{name} , 'Phileston' );
+}
 
 done_testing();
