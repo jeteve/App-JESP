@@ -38,8 +38,6 @@ push @connection_params, { dsn => $pgsql->dsn(),
                        };
 
 foreach my $connect_params ( @connection_params ){
-    diag("Testing ".$connect_params->{dsn} );
-
     ok( my $jesp = App::JESP->new({ dsn => $connect_params->{dsn},
                                     username => $connect_params->{username},
                                     password => $connect_params->{postgres},
