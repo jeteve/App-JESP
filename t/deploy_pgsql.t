@@ -4,13 +4,15 @@ use Test::Most;
 BEGIN{
     eval "use Test::PostgreSQL";
     plan skip_all => "Test::PostgreSQL is required for this test" if $@;
+    eval "use Net::EmptyPort";
+    plan skip_all => "Net::EmptyPort is required for this test" if $@;
 }
 
 use App::JESP;
 
-my $pgsql = Test::PostgreSQL->new();
+my $pgsql = Test::PostgreSQL->new({ port => Net::EmptyPort::empty_port() });
 
-my $jesp = App::JESP->new({ dsn => $pgsql->dsn(),,
+my $jesp = App::JESP->new({ dsn => $pgsql->dsn(),
                             password => '',
                             username => 'postgres',
                             home => './t/home_pgsql/'
