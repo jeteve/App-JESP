@@ -17,15 +17,29 @@ throws_ok(sub{ $jesp->deploy() } , qr/ERROR querying meta/ );
 
 # Time to install
 $jesp->install();
-is( $jesp->deploy(), 3, "Ok applied 3 patches");
+is( $jesp->deploy(), 4, "Ok applied 3 patches");
 is( $jesp->deploy(), 0, "Ok applied 0 patches on the second call");
 
 # After this is installed, we should be able to use and query the
 # table foobar with all its columns.
 {
-    $jesp->dbix_simple()->insert('foobar', { id => 1 , bla => 'some' , baz => 'thing' });
+    $jesp->dbix_simple()->insert('foobar', {bla => 'some' , baz => 'thing' });
     my @rows = @{ $jesp->dbix_simple()->select( 'foobar' , [ 'id', 'bla', 'baz' ] )->hashes() };
-    is( scalar( @rows ) , 1 );
+    is( scalar( @rows ) , 2 );
+}
+
+# Now we want to force the application of the patch 'insert_one_foobar'
+is( $jesp->deploy({ force => 1, patches => [ 'insert_one_foobar' ] }) , 1 , "Only one patch forced applied");
+{
+    my @rows = @{ $jesp->dbix_simple()->select( 'foobar' , [ 'id', 'bla', 'baz' ] )->hashes() };
+    is( scalar( @rows ) , 3, "The forced patch created another foobar row");
+}
+
+# Force logonly to refresh all the meta table, without effectively doing anything.
+is( $jesp->deploy({ force => 1, logonly => 1  }) , 4 , "Ok 4  patches forced applied, only logging");
+{
+    my @rows = @{ $jesp->dbix_simple()->select( 'foobar' , [ 'id', 'bla', 'baz' ] )->hashes() };
+    is( scalar( @rows ) , 3, "Still 3 items in foobar");
 }
 
 # And also do clever stuff with the customer table and the customer_address view

@@ -121,11 +121,30 @@ sub install{
 }
 
 sub deploy{
-    my ($self) = @_;
+    my ($self, $options) = @_;
+
+    $options //= {};
+
     $log->info("DEPLOYING DB Patches");
 
     my $db = $self->dbix_simple();
     my $patches = $self->plan()->patches();
+
+    if( $options->{patches} ){
+        # Filter existing patches.
+        my @patch_ids = @{$options->{patches}};
+        $log->info("Applying only patches ".join(', ', @patch_ids)." in this order");
+        my $patches_by_id = { map{ $_->id() => $_ } @$patches };
+        my @new_patch_list = ();
+        foreach my $patch_id ( @patch_ids ){
+            my $patch = $patches_by_id->{$patch_id};
+            unless( $patch ){
+                die "Cannot find patch '$patch_id' in the plan ".$self->plan()->file().". Check the name\n";
+            }
+            push @new_patch_list , $patch;
+        }
+        $patches = \@new_patch_list;
+    }
 
     my $applied_patches_result = $self->_protect_select(
         sub{
@@ -137,14 +156,26 @@ sub deploy{
     my $applied = 0;
     foreach my $patch ( @{$patches} ){
         if( my $applied_patch = $applied_patches->{$patch->id()}){
-            $log->debug("Patch '".$patch->id()."' has already been applied on ".$applied_patch->{applied_datetime});
-            next;
+            unless( $options->{force} ){
+                $log->debug("Patch '".$patch->id()."' has already been applied on ".$applied_patch->{applied_datetime});
+                next;
+            }
+            $log->warn("Patch '".$patch->id()."' has already been applied on ".$applied_patch->{applied_datetime}." but forcing it application");
         }
         $log->info("Patch '".$patch->id()."' not applied yet");
         eval{
             $db->begin_work();
-            $db->insert( $self->patches_table_name() , { id => $patch->id() } );
-            $self->driver()->apply_patch( $patch );
+            if( my $already_applied = $db->select( $self->patches_table_name(), '*',
+                                                   { id => $patch->id() } )->hash() ){
+                $db->update( $self->patches_table_name(),
+                             { applied_datetime => \'CURRENT_TIMESTAMP' },
+                             { id => $patch->id() } );
+            } else {
+                $db->insert( $self->patches_table_name() , { id => $patch->id() } );
+            }
+            unless( $options->{logonly} ){
+                $self->driver()->apply_patch( $patch );
+            }
             $db->commit();
         };
         if( my $err = $@ ){
@@ -380,6 +411,29 @@ Returns the number of patches applied.
 Usage:
 
   print "Applied ".$this->deploy()." patches";
+
+Options:
+
+=over
+
+=item patches [ 'patch_one' , 'patch_two' ]
+
+Specify the patches to apply. This is useful in combination with C<force>
+(to force a data producing patch to run for instance), or with C<logonly>.
+
+=item force 1|0
+
+Force patches applications, regardless of the fact they have been applied already or not.
+Note that it does not mean it's ok for the patches to fail. Any failing patch will still
+terminates the deploy method. This is particularly useful in combination with the 'patches'
+option where you can choose which patch to apply. Defaults to 0.
+
+=item logonly 1|0
+
+Only log the application of patches, without effectively applying them.
+
+=back
+
 
 =head1 DEVELOPMENT
 
