@@ -4,7 +4,6 @@ use App::Cmd::Setup -app;
 use strict; use warnings;
 
 use App::JESP;
-our $VERSION = $App::JESP::VERSION || '0.0000';
 
 use Data::Dumper;
 use Log::Any::Adapter;

@@ -24,7 +24,7 @@ sub abstract { "About this software" }
 sub description { "About this software" }
 sub execute {
     my ($self, $opt, $args) = @_;
-    $log->info("This is App::JESP version ". $App::JESP::Cmd::VERSION );
+    $log->info("This is App::JESP version ". ( $App::JESP::Cmd::VERSION || '-DEVELOPMENT-' ) );
     $log->info("Project homepage: https://github.com/jeteve/App-JESP");
 }
 
