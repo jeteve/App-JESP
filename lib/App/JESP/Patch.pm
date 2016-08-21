@@ -22,7 +22,10 @@ sub _build_file_data{
     my ($self) = @_;
     unless( $self->file() ){ return };
 
-    my $file = File::Spec->catfile( $self->jesp()->home() , $self->file() );
+    my $file =
+        File::Spec->file_name_is_absolute( $self->file() ) ?
+        $self->file() :
+        File::Spec->catfile( $self->jesp()->home() , $self->file() );
 
     unless( -e -r $file ){ die "Cannot read file '$file'\n"; }
     return File::Slurp::read_file( $file );
