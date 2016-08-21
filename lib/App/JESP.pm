@@ -210,7 +210,7 @@ App::JESP - Just Enough SQL Patches
 
 Use the command line utility:
 
-  jesp --home path/to/jesphome
+  jesp
 
 Or use from your own program (in Perl):
 
@@ -241,6 +241,7 @@ a json datastructure like this:
     "patches": [
         { "id":"foobartable", "sql": "CREATE TABLE foobar(id INT PRIMARY KEY)"},
         { "id":"foobar_more", "file": "patches/morefoobar.sql" }
+        { "id":"foobar_abs",  "file": "/absolute/path/to/patches/evenmore.sql" }
     ]
   }
 
