@@ -9,7 +9,6 @@ use Log::Any qw/$log/;
 
 use Data::Dumper;
 use DBI;
-use DBD::mysql;
 use String::ShellQuote;
 
 =head1 NAME
@@ -48,6 +47,8 @@ sub apply_sql{
     # Time to build the command according to the dsn properties
     my $properties = {};
     {
+        eval "require DBD::mysql" or die "Please install DBD::mysql for this to work\n";
+
         my ($scheme, $driver, $attr_string, $attr_hash, $driver_dsn) = DBI->parse_dsn( $self->jesp()->dsn() );
         DBD::mysql->_OdbcParse( $driver_dsn , $properties , [] );
         $properties->{user} ||= $self->jesp()->username();
