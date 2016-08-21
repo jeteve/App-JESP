@@ -26,8 +26,12 @@ sub opt_spec {
               "The home directory where the plan.json lives" ],
         [ 'dsn=s' =>
               "The DSN to connect to the DB. See https://metacpan.org/pod/DBI#parse_dsn for DSN format"
-              ."\nDSN Examples:\ndbi:mysql:database=testdb;host=localhost;port=3306"
-              ."\n dbi:Pg:dbname=testdb;host=localhost;port=5432\n"
+              ."\nExamples:\n"
+              ."\n dbi:mysql:database=testdb;host=localhost;port=3306"
+              ."\n dbi:SQLite:dbname=demo/test.db"
+              ."\n dbi:Pg:dbname=testdb;host=localhost;port=5432"
+              ."\n"
+
           ],
         [ 'username|u=s' =>
               "The username to connect to the DB", { default => undef } ],
