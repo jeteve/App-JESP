@@ -17,6 +17,7 @@ has 'dsn' => ( is => 'ro', isa => 'Str', required => 1 );
 has 'username' => ( is => 'ro', isa => 'Maybe[Str]', required => 1);
 has 'password' => ( is => 'ro', isa => 'Maybe[Str]', required => 1);
 has 'home' => ( is => 'ro', isa => 'Str', required => 1 );
+
 ## JESP Attributes
 has 'prefix' => ( is => 'ro', isa => 'Str', default => 'jesp_' );
 has 'driver_class' => ( is => 'ro', isa => 'Str', lazy_build => 1);
@@ -160,11 +161,14 @@ sub deploy{
 
 # Runs the code to return a DBIx::Simple::Result
 # or die with the given error message (for humans)
+#
+# Mainly this is for testing that a table exists by attemtpting to select from
+# it. Do NOT use that in any other cases.
 sub _protect_select{
     my ( $self, $code , $message) = @_;
     my $result = eval{ $code->(); };
     if( my $err = $@ || $result->isa('DBIx::Simple::Dummy')  ){
-        $log->debug("Error doing select: ".(  $err || $self->dbix_simple()->error() ) );
+        $log->trace("Error doing select: ".(  $err || $self->dbix_simple()->error() ) );
         die $message."\n";
     }
     return $result;
@@ -172,7 +176,7 @@ sub _protect_select{
 
 sub _apply_meta_patch{
     my ($self, $meta_patch) = @_;
-    $log->debug("Appliyng meta patch ".$meta_patch->{id});
+    $log->debug("Applying meta patch ".$meta_patch->{id});
 
     my $sql = $meta_patch->{sql};
     my $db = $self->dbix_simple();

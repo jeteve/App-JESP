@@ -1,6 +1,7 @@
 #-*- mode: Perl -*-
 # vim: set syntax=perl:
 
+requires 'App::Cmd', '>= 0.331';
 requires 'Data::Dumper';
 requires 'DBI', '>= 1.636';
 requires 'DBIx::Simple', '>= 1.35';
