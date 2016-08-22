@@ -157,12 +157,13 @@ sub deploy{
     foreach my $patch ( @{$patches} ){
         if( my $applied_patch = $applied_patches->{$patch->id()}){
             unless( $options->{force} ){
-                $log->debug("Patch '".$patch->id()."' has already been applied on ".$applied_patch->{applied_datetime});
+                $log->debug("Patch '".$patch->id()."' has already been applied on ".$applied_patch->{applied_datetime}." skipping");
                 next;
             }
-            $log->warn("Patch '".$patch->id()."' has already been applied on ".$applied_patch->{applied_datetime}." but forcing it application");
+            $log->warn("Patch '".$patch->id()."' has already been applied on ".$applied_patch->{applied_datetime}." but forcing it.");
+        }else{
+            $log->info("Patch '".$patch->id()."' never applied");
         }
-        $log->info("Patch '".$patch->id()."' not applied yet");
         eval{
             $db->begin_work();
             if( my $already_applied = $db->select( $self->patches_table_name(), '*',
@@ -175,6 +176,8 @@ sub deploy{
             }
             unless( $options->{logonly} ){
                 $self->driver()->apply_patch( $patch );
+            }else{
+                $log->info("logonly mode. Patch not really applied");
             }
             $db->commit();
         };

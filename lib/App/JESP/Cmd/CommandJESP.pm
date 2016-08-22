@@ -33,11 +33,11 @@ sub opt_spec {
               ."\n"
 
           ],
-        [ 'username|u=s' =>
+        [ 'username=s' =>
               "The username to connect to the DB", { default => undef } ],
-        [ 'password|p=s' =>
+        [ 'password=s' =>
               "The password to connect to the DB", { default => undef } ],
-        [ 'prefix|P=s' =>
+        [ 'prefix=s' =>
               "The prefix for all jesp metatables. Defaults to 'jesp_'" ],
         $class->options($app),
     )
