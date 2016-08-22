@@ -363,7 +363,7 @@ The order in which patches are applied is important. But it is not important
 to the point of enforcing excatly the same order on every DB the patches are deployed to.
 App::JESP applies the named patches in the order it finds them in the plan, only taking
 into account the ones that have not been applied yet. This allows developer to work
-on their development DB and merge seemlessly patches from other developers.
+on their development DB and easily merge patches from other developers.
 
 =item JSON Based
 
@@ -379,7 +379,7 @@ simple, to allow for easy repairs if things go wrong.
 
 It's great to have a convenient command line tool to work and deploy patches, but maybe
 your development process, or your code layout is a bit different. If you use L<App::JESP>
-from Perl, it should be easy to embed and run it seemlessly yourself.
+from Perl, it should be easy to embed and run it yourself.
 
 =item What about reverting?
 

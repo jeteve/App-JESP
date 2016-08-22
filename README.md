@@ -6,7 +6,7 @@ App::JESP - Just Enough SQL Patches
 
 Use the command line utility:
 
-    jesp --home path/to/jesphome
+    jesp
 
 Or use from your own program (in Perl):
 
@@ -35,6 +35,7 @@ a json datastructure like this:
       "patches": [
           { "id":"foobartable", "sql": "CREATE TABLE foobar(id INT PRIMARY KEY)"},
           { "id":"foobar_more", "file": "patches/morefoobar.sql" }
+          { "id":"foobar_abs",  "file": "/absolute/path/to/patches/evenmore.sql" }
       ]
     }
 
@@ -120,7 +121,7 @@ Here are some design principles this package is attempting to implement:
     to the point of enforcing excatly the same order on every DB the patches are deployed to.
     App::JESP applies the named patches in the order it finds them in the plan, only taking
     into account the ones that have not been applied yet. This allows developer to work
-    on their development DB and merge seemlessly patches from other developers.
+    on their development DB and easily merge patches from other developers.
 
 - JSON Based
 
@@ -136,7 +137,7 @@ Here are some design principles this package is attempting to implement:
 
     It's great to have a convenient command line tool to work and deploy patches, but maybe
     your development process, or your code layout is a bit different. If you use [App::JESP](https://metacpan.org/pod/App::JESP)
-    from Perl, it should be easy to embed and run it seemlessly yourself.
+    from Perl, it should be easy to embed and run it yourself.
 
 - What about reverting?
 
@@ -169,6 +170,24 @@ Returns the number of patches applied.
 Usage:
 
     print "Applied ".$this->deploy()." patches";
+
+Options:
+
+- patches \[ 'patch\_one' , 'patch\_two' \]
+
+    Specify the patches to apply. This is useful in combination with `force`
+    (to force a data producing patch to run for instance), or with `logonly`.
+
+- force 1|0
+
+    Force patches applications, regardless of the fact they have been applied already or not.
+    Note that it does not mean it's ok for the patches to fail. Any failing patch will still
+    terminates the deploy method. This is particularly useful in combination with the 'patches'
+    option where you can choose which patch to apply. Defaults to 0.
+
+- logonly 1|0
+
+    Only log the application of patches, without effectively applying them.
 
 # DEVELOPMENT
 
