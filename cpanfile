@@ -8,6 +8,7 @@ requires 'DBIx::Simple', '>= 1.35';
 requires 'File::Slurp';
 requires 'File::Spec';
 requires 'File::Which';
+requires 'IPC::Run';
 requires 'JSON';
 requires 'Log::Any', '>= 1.040';
 requires 'Moose' , '>= 2.1801';
