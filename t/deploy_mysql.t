@@ -14,10 +14,12 @@ use App::JESP;
 # use Log::Any::Adapter qw/Stderr/;
 
 # Then something with MySQL
-my @mysqls = ( Test::mysqld->new( my_cnf => {
+my $mysqld = Test::mysqld->new( my_cnf => {
     'skip-networking' => '1',
     socket => File::Spec->catfile( File::Spec->tmpdir() , 'socket-'.$$.'-testmysqld')
-}) );
+}) or plan skip_all => $Test::mysqld::errstr;
+
+my @mysqls = ( $mysqld );
 
 if( $ENV{EXTENDED_TESTING} ){
     # Other flavours of Test::mysqld

@@ -14,7 +14,7 @@ use File::Spec;
 my $mysql =  Test::mysqld->new( my_cnf => {
     'skip-networking' => '1',
     socket => File::Spec->catfile( File::Spec->tmpdir() , 'socket-'.$$.'-testmysqld')
-});
+}) or plan skip_all => $Test::mysqld::errstr;
 
 my $dbh = DBI->connect( $mysql->dsn() , '', '' , { RaiseError => 1, AutoCommit => 1 });
 $dbh->do('CREATE DATABASE grotest');
