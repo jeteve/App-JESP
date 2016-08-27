@@ -26,10 +26,14 @@ my $mysql = Test::mysqld->new( my_cnf => {
     socket => File::Spec->catfile( File::Spec->tmpdir() , 'socket-'.$$.'-testmysqld')
 });
 
-push @connection_params, { dsn => $mysql->dsn(),
-                           password => '',
-                           username => ''
-                       };
+if( $mysql ){
+    push @connection_params, { dsn => $mysql->dsn(),
+                               password => '',
+                               username => ''
+                           };
+}else{
+    diag("Warning: could not build Test::mysqld ".$Test::mysqld::errstr);
+}
 
 my $pgsql = Test::PostgreSQL->new();
 push @connection_params, { dsn => $pgsql->dsn(),
