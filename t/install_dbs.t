@@ -36,10 +36,14 @@ if( $mysql ){
 }
 
 my $pgsql = Test::PostgreSQL->new();
-push @connection_params, { dsn => $pgsql->dsn(),
-                           password => undef,
-                           username => 'postgres'
-                       };
+if( $pgsql ){
+    push @connection_params, { dsn => $pgsql->dsn(),
+                               password => undef,
+                               username => 'postgres'
+                           };
+}else{
+    diag("Warning: could not build Test::PostgreSQL ".$Test::PostgreSQL::errstr);
+}
 
 foreach my $connect_params ( @connection_params ){
     ok( my $jesp = App::JESP->new({ dsn => $connect_params->{dsn},
@@ -54,4 +58,5 @@ foreach my $connect_params ( @connection_params ){
     is( $installed_patches[0]->{id} , $jesp->prefix().'meta_zero' , "Good zero name" );
     ok( exists( $installed_patches[0]->{applied_datetime} ) , "There is an applied time" );
 }
+ok(1);
 done_testing();
