@@ -10,7 +10,7 @@ BEGIN{
 
 use App::JESP;
 
-my $pgsql = Test::PostgreSQL->new({ port => Net::EmptyPort::empty_port() }) or plan skip_all => $Test::PostgreSQL::errstr;
+my $pgsql = eval{ Test::PostgreSQL->new({ port => Net::EmptyPort::empty_port() }) } or plan skip_all => $@.' - '.$Test::PostgreSQL::errstr;
 
 my $jesp = App::JESP->new({ dsn => $pgsql->dsn(),
                             password => '',

@@ -35,14 +35,14 @@ if( $mysql ){
     diag("Warning: could not build Test::mysqld ".$Test::mysqld::errstr);
 }
 
-my $pgsql = Test::PostgreSQL->new();
+my $pgsql = eval{ Test::PostgreSQL->new(); };
 if( $pgsql ){
     push @connection_params, { dsn => $pgsql->dsn(),
                                password => undef,
                                username => 'postgres'
                            };
 }else{
-    diag("Warning: could not build Test::PostgreSQL ".$Test::PostgreSQL::errstr);
+    diag("Warning: could not build Test::PostgreSQL: ".$@.' - '.$Test::PostgreSQL::errstr);
 }
 
 foreach my $connect_params ( @connection_params ){
