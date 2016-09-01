@@ -21,7 +21,8 @@ sub apply_sql{
     # note that we reuse the same dbh as the application.
     my $dbh = $self->jesp()->dbix_simple()->dbh();
     local $dbh->{sqlite_allow_multiple_statements} = 1;
-    return $dbh->do( $sql ) // confess( $dbh->errstr() );
+    my $ret = $dbh->do( $sql );
+    return defined($ret) ? $ret : confess( $dbh->errstr() );
 }
 
 __PACKAGE__->meta->make_immutable();

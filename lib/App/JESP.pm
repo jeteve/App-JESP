@@ -60,7 +60,7 @@ sub _build_driver_class{
 sub _build_plan{
     my ($self) = @_;
     my $file = File::Spec->catfile( $self->home(), 'plan.json' );
-    unless( -e -r $file ){
+    unless( ( -e $file ) && ( -r $file ) ){
         die "File $file does not exists or is not readable\n";
     }
     return App::JESP::Plan->new({ file => $file, jesp => $self });
@@ -123,7 +123,7 @@ sub install{
 sub deploy{
     my ($self, $options) = @_;
 
-    $options //= {};
+    defined($options) ||(  $options = {} );
 
     $log->info("DEPLOYING DB Patches");
 

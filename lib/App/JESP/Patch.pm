@@ -27,7 +27,7 @@ sub _build_file_data{
         $self->file() :
         File::Spec->catfile( $self->jesp()->home() , $self->file() );
 
-    unless( -e -r $file ){ die "Cannot read file '$file'\n"; }
+    unless( ( -e $file ) && ( -r $file ) ){ die "Cannot read file '$file'\n"; }
     return File::Slurp::read_file( $file );
 }
 

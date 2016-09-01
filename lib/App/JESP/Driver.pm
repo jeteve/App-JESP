@@ -50,7 +50,8 @@ connection to send the patch SQL content.
 sub apply_sql{
     my ($self, $sql) = @_;
     my $dbh = $self->jesp()->get_dbh()->();
-    return $dbh->do( $sql ) // confess( $dbh->errstr() );
+    my $ret = $dbh->do( $sql );
+    return  defined($ret) ? $ret : confess( $dbh->errstr() );
 }
 
 __PACKAGE__->meta()->make_immutable();
