@@ -187,7 +187,7 @@ Options:
 
 - logonly 1|0
 
-    Only log the application of patches, without effectively applying them.
+    Only record the application of patches in the metadata, without effectively applying them.
 
 # DEVELOPMENT
 
