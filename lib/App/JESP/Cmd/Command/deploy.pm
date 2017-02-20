@@ -38,7 +38,7 @@ sub abstract { "Deploy patches from <home>/plan.json in the DB" }
 sub description { "Deploys patches from <home>/plan.json in the DB and records their applications in the Meta tables" }
 sub execute {
     my ($self, $opts, $args) = @_;
-    $self->{__jesp}->deploy( $opts );
+    $self->jesp->deploy( $opts );
 }
 
 1;
