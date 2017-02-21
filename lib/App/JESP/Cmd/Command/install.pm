@@ -24,7 +24,7 @@ sub abstract { "Install jesp in DB" }
 sub description { "Install jesp's metadata tables in the target database" }
 sub execute {
     my ($self, $opt, $args) = @_;
-    $self->{__jesp}->install();
+    $self->jesp->install();
 }
 
 1;

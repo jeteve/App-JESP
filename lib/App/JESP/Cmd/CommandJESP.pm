@@ -86,4 +86,15 @@ Override that in subclasses to validate further.
 
 sub validate{};
 
+=head2 jesp
+
+Returns the current JESP instance.
+
+=cut
+
+sub jesp{
+    my ($self) = @_;
+    return $self->{__jesp};
+}
+
 1;
