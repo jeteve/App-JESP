@@ -302,7 +302,7 @@ this uses to manage the metadata.
 
 =head2 mysql
 
-This will use the mysql executable on the disk (will look for it in PATH)
+This will use the `mysql` executable on the disk (will look for it in PATH)
 to execute your patches, exactly like you would do on the command line.
 
 =head2 Pg
@@ -346,21 +346,21 @@ Here are some design principles this package is attempting to implement:
 =item Write your own SQL
 
 No funny SQL generated from code here. By nature, any ORM will always lag behind its
-target DBs' features. This means that counting on sofware to generate SQL statement from
+target DBs' features. This means that counting on software to generate SQL statement from
 your ORM classes will always prevent you from truly using the full power of your DB of choice.
 
 With App::JESP, you have to write your own SQL for your DB, and this is a good thing.
 
 =item No version numbers
 
-App::JESP simply keep track of which ones of your named patches are applied to the DB.
+App::JESP simply keeps track of which ones of your named patches are applied to the DB.
 Your DB version is just that: The subset of patches that were applied to it. This participates
-in allowing several developers to work on different parts of the DB in parrallel.
+in allowing several developers to work on different parts of the DB in parallel.
 
 =item No fuss patch ordering
 
 The order in which patches are applied is important. But it is not important
-to the point of enforcing excatly the same order on every DB the patches are deployed to.
+to the point of enforcing exactly the same order on every DB the patches are deployed to.
 App::JESP applies the named patches in the order it finds them in the plan, only taking
 into account the ones that have not been applied yet. This allows developer to work
 on their development DB and easily merge patches from other developers.

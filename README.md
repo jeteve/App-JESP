@@ -29,7 +29,7 @@ plan for your DB. See plan.json section below for the format of this file.
 ## plan.json
 
 This file MUST live in your JESP home directory. It has to contain
-a json data structure like this:
+a json datastructure like this:
 
     {
       "patches": [
@@ -60,9 +60,9 @@ This comes with the following built-in drivers:
 Just in case. Note that your patches will be executed in the same connection
 this uses to manage the metadata.
 
-## MySQL
+## mysql
 
-This will use the MySQL executable on the disk (will look for it in PATH)
+This will use the \`mysql\` executable on the disk (will look for it in PATH)
 to execute your patches, exactly like you would do on the command line.
 
 ## Pg
@@ -136,7 +136,7 @@ Here are some design principles this package is attempting to implement:
 - Programmable
 
     It's great to have a convenient command line tool to work and deploy patches, but maybe
-    your development process or your code layout is a bit different. If you use [App::JESP](https://metacpan.org/pod/App::JESP)
+    your development process, or your code layout is a bit different. If you use [App::JESP](https://metacpan.org/pod/App::JESP)
     from Perl, it should be easy to embed and run it yourself.
 
 - What about reverting?
@@ -144,7 +144,7 @@ Here are some design principles this package is attempting to implement:
     Your live DB is not the place to test your changes. Your DB at <My Software> Version N should
     be compatible with Code at <My Software> Version N-1. You are responsible for testing that.
 
-    We'll probably implement reverting in the future, but for now, we assume you
+    We'll probably implement reverting in the future, but for now we assume you
     know what you're doing when you patch your DB.
 
 # METHODS
@@ -198,4 +198,4 @@ Options:
 # COPYRIGHT
 
 This software is released under the Artistic Licence by Jerome Eteve. Copyright 2016.
-A copy of this license is enclosed in this package.
+A copy of this licence is enclosed in this package.
