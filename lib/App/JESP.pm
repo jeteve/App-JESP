@@ -96,7 +96,7 @@ sub install{
             "CANNOT_SELECT_FROM_META");
     };
     if( my $err = $@ ){
-        unless( $err eq "CANNOT_SELECT_FROM_META\n" ){
+        unless( $err =~ /^CANNOT_SELECT_FROM_META\n/ ){
             $log->critical("Unexpected error from _protect_select. Run again in verbose mode.");
             die $err;
         }
