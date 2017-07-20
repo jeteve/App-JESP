@@ -133,7 +133,7 @@ sub deploy{
     if( $options->{patches} ){
         # Filter existing patches.
         my @patch_ids = @{$options->{patches}};
-        $log->info("Applying only patches ".join(', ', @patch_ids)." in this order");
+        $log->info("Applying only patches ".join(', ', map{ "'".$_."'" }  @patch_ids)." in this order");
         my $patches_by_id = { map{ $_->id() => $_ } @$patches };
         my @new_patch_list = ();
         foreach my $patch_id ( @patch_ids ){
