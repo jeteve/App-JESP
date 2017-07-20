@@ -18,6 +18,9 @@ has 'sql' => ( is => 'ro', isa => 'Maybe[Str]' , lazy_build => 1 );
 
 has 'file_data' => ( is => 'ro' , lazy_build => 1 );
 
+#Transient properties:
+has 'applied_datetime' => ( is => 'rw', isa => 'Str', required => 0 );
+
 sub _build_file_data{
     my ($self) = @_;
     unless( $self->file() ){ return };

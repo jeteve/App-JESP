@@ -120,6 +120,39 @@ sub install{
     return 1;
 }
 
+sub _applied_patches{
+    my ($self) = @_;
+
+    my $db = $self->dbix_simple();
+    my $applied_patches_result = $self->_protect_select(
+        sub{
+            $db->select( $self->patches_table_name() , [ 'id', 'applied_datetime' ] , {} , 'applied_datetime' );
+        }, "ERROR querying meta schema. Did you forget to run 'install'?");
+
+    return { $applied_patches_result->map_hashes('id') };
+}
+
+sub status{
+    my ($self) = @_;
+    my $plan_patches = $self->plan()->patches();
+    $log->debug("Got ".scalar(@$plan_patches)." patches to inspect");
+
+    my $applied_patches = $self->_applied_patches();
+
+    foreach my $plan_patch ( @$plan_patches ){
+        if( my $applied_patch = delete $applied_patches->{$plan_patch->id()} ){
+            $plan_patch->applied_datetime( $applied_patch->{applied_datetime} );
+        }
+    }
+
+    my $meta_prefix = $self->prefix().'meta';
+
+    return {
+        plan_patches => $plan_patches,
+        plan_orphans => [ grep{ $_ !~ /^$meta_prefix/ }  keys %$applied_patches ]
+    };
+}
+
 sub deploy{
     my ($self, $options) = @_;
 
@@ -146,12 +179,7 @@ sub deploy{
         $patches = \@new_patch_list;
     }
 
-    my $applied_patches_result = $self->_protect_select(
-        sub{
-            $db->select( $self->patches_table_name() , [ 'id', 'applied_datetime' ] );
-        }, "ERROR querying meta schema. Did you forget to run 'install'?");
-
-    my $applied_patches = { $applied_patches_result->map_hashes('id') };
+    my $applied_patches = $self->_applied_patches();
 
     my $applied = 0;
     foreach my $patch ( @{$patches} ){
@@ -403,6 +431,21 @@ Returns true on success. Will die on error.
 Usage:
 
   $this->install();
+
+=head2 status
+
+Returns the list of L<App::JESP::Patch> with their application Datetime if this is known.
+This will ALSO return the orphans (patches that are recorded as applied but not in the plan).
+
+Usage:
+
+  my $status = $this->status();
+
+  $status is like:
+     {
+        plan_patches => [ list of App::JESP::Patch ],
+        plan_orphans => [ list of orphan patch IDs ]
+     };
 
 =head2 deploy
 
