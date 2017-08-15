@@ -17,5 +17,7 @@ requires 'String::ShellQuote', '>= 1.04';
 
 test_requires 'Carp::Always', '>= 0.13';
 test_requires 'DBD::SQLite', '>= 1.50';
+test_requires 'File::Temp', '>= 0.2304';
+test_requires 'File::Which', '>= 1.21';
 test_requires 'Test::Most', '>= 0.34';
 test_requires 'Test::Pod::Coverage', '>= 1.08';
