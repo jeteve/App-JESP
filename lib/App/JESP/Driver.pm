@@ -82,7 +82,7 @@ sub apply_script{
     $properties->{password} ||= $self->jesp()->password();
     $properties = {
         %$properties,
-        %{ $attr_hash // {} },
+        %{ defined( $attr_hash ) ? $attr_hash : {} },
         dsn => $self->jesp()->dsn(),
         scheme => $scheme,
         driver => $driver,
@@ -127,7 +127,7 @@ sub apply_sql{
 
 
 # Shamelessly copied from DBD-mysql-4.043/lib/DBD/mysql.pm
-sub _OdbcParse($$$) {
+sub _OdbcParse {
     my($class, $dsn, $hash, $args) = @_;
     my($var, $val);
     if (!defined($dsn)) {

@@ -6,7 +6,7 @@ use Test::Most;
 use App::JESP;
 
 # Test deployment in SQLite
- use Log::Any::Adapter qw/Stderr/;
+# use Log::Any::Adapter qw/Stderr/;
 
 use File::Temp;
 use File::Which;
