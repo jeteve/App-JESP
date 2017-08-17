@@ -3,13 +3,14 @@ package App::JESP;
 use Moose;
 
 use App::JESP::Plan;
+use App::JESP::Colorizer;
 
 use Class::Load;
 use DBI;
 use DBIx::Simple;
-use Log::Any qw/$log/;
-
 use File::Spec;
+use IO::Interactive;
+use Log::Any qw/$log/;
 
 # Settings
 ## DB Connection attrbutes.
@@ -42,6 +43,9 @@ has 'meta_patches' => ( is => 'ro', isa => 'ArrayRef[HashRef]',
 
 has 'plan' => ( is => 'ro', isa => 'App::JESP::Plan', lazy_build => 1);
 has 'driver' => ( is => 'ro', isa => 'App::JESP::Driver', lazy_build => 1 );
+
+has 'interactive' => ( is => 'ro' , isa => 'Bool' , lazy_build => 1 );
+has 'colorizer' => ( is => 'ro', isa => 'App::JESP::Colorizer', lazy_build => 1 );
 
 sub _build_driver{
     my ($self) = @_;
@@ -83,6 +87,16 @@ sub _build_meta_patches{
     return [
         { id => $self->prefix().'meta_zero', sql => 'CREATE TABLE '.$self->patches_table_name().' ( id VARCHAR(512) NOT NULL PRIMARY KEY, applied_datetime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP );' }
     ];
+}
+
+sub _build_interactive{
+    my ($self) = @_;
+    return IO::Interactive::is_interactive();
+}
+
+sub _build_colorizer{
+    my ($self) = @_;
+    return App::JESP::Colorizer->new({ jesp => $self });
 }
 
 sub install{
