@@ -226,12 +226,12 @@ sub deploy{
         if( my $err = $@ ){
             $log->error("Got error $err. ROLLING BACK");
             $db->rollback();
-            die "ERROR APPLYING PATCH ".$patch->id().": $err. ABORTING\n";
+            die "ERROR APPLYING PATCH ".$patch->id().": $err. ".$self->colorizer()->colored("ABORTING", "bold red")."\n";
         };
-        $log->info("Patch '".$patch->id()."' applied successfully");
+        $log->info($self->colorizer()->colored("Patch '".$patch->id()."' applied successfully", "green"));
         $applied++;
     }
-    $log->info("DONE Deploying DB Patches");
+    $log->info($self->colorizer()->colored("DONE Deploying DB Patches", "green"));
     return $applied;
 }
 
