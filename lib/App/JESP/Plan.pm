@@ -22,7 +22,7 @@ has 'raw_data' => ( is => 'ro', isa => 'HashRef' , lazy_build => 1);
 sub _build_raw_data{
     my ($self) = @_;
     my $content = File::Slurp::read_file( $self->file() );
-    return JSON::decode_json( $content );
+    return JSON->new->relaxed(1)->decode( $content );
 }
 
 sub _build_patches{
