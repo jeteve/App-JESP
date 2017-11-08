@@ -320,7 +320,7 @@ a json datastructure like this:
         { "id":"foobar_sql",        "sql":  "CREATE TABLE foobar(id INT PRIMARY KEY)"},
         { "id":"foobar_rel",        "file": "patches/morefoobar.sql" }
         { "id":"foobar_abs",        "file": "/absolute/path/to/patches/evenmore.sql" },
-        { "id":"a_backfill_script", "file": "path/to/executable/file.sh" }
+        { "id":"a_backfill_script", "file": "path/to/executable/file.sh" },
     ]
   }
 
@@ -331,6 +331,10 @@ the SQL.
 The C<id> is a VARCHAR(512). While it doesn't indicate any ordering, a simple and useful
 way to keep the IDs unique is to provide a date/timestamp (of when the patch was
 I<authored>) plus a free form description of the change.
+
+The L<JSON> file is parsed with the relaxed flag, which means it can contain trailing
+commas (and # comments). The trailing commas are particularly useful, since commit diffs
+and merge conflicts will be contained to the new line that was added.
 
 You are encouraged to look in L<https://github.com/jeteve/App-JESP/tree/master/t> for examples.
 
