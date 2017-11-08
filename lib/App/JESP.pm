@@ -291,10 +291,11 @@ Use the command line utility:
 Or use from your own program (in Perl):
 
     my $jesp = App::JESP->new({
-        home     => 'path/to/jesphome',
-        dsn      => ...,
-        username => ...,
-        password => ...
+        interactive => 0, # No ANSI color
+        home        => 'path/to/jesphome',
+        dsn         => ...,
+        username    => ...,
+        password    => ...
     });
 
     $jesp->install();
