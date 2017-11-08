@@ -381,7 +381,7 @@ Point to an EXECUTABLE file. (absolute or relative to the plan directory):
     ]
   }
 
-See L<APP::JESP::Driver#apply_script> to see what environment the script is ran in. Note that the script
+See L<APP::JESP::Driver#apply_script> to see what environment the script is being run in. Note that the script
 needs to be executable by the current user to be detected as a script.
 
 =head1 COMPATIBILITY
@@ -410,7 +410,7 @@ This will use a new connection to the Database to execute the patches.
 This is to allow you using BEGIN ; COMMIT; to make your patch transactional
 without colliding with the Meta data management transaction.
 
-=head2 Your own driver.
+=head2 Your own driver
 
 Should you want to write your own driver, simply extend L<App::JESP::Driver>
 and implement any method you like (most likely you will want apply_sql).
@@ -421,8 +421,8 @@ To use your driver, simply give its class to the constuctor:
 
 Or if you prefer to build an instance yourself:
 
-  my $jesp;
-  $jesp = App::JESP->new({ .., driver => My::App::JESP::Driver::SpecialDB->new({ jesp => $jesp,  ... ) });
+    my $jesp;
+    $jesp = App::JESP->new({ .., driver => My::App::JESP::Driver::SpecialDB->new({ jesp => $jesp,  ... ) });
 
 =head1 MOTIVATIONS & DESIGN
 
@@ -542,7 +542,7 @@ Specify the patches to apply. This is useful in combination with C<force>
 
 Force patches applications, regardless of the fact they have been applied already or not.
 Note that it does not mean it's ok for the patches to fail. Any failing patch will still
-terminates the deploy method. This is particularly useful in combination with the 'patches'
+terminate the deploy method. This is particularly useful in combination with the 'patches'
 option where you can choose which patch to apply. Defaults to 0.
 
 =item logonly 1|0
