@@ -290,14 +290,15 @@ Use the command line utility:
 
 Or use from your own program (in Perl):
 
-  my $jesp = App::JESP->new({ home => 'path/to/jesphome',
-                              dsn => ...,
-                              username => ...,
-                              password => ...
-                            });
+    my $jesp = App::JESP->new({
+        home     => 'path/to/jesphome',
+        dsn      => ...,
+        username => ...,
+        password => ...
+    });
 
-  $jsep->install();
-  $jesp->deploy();
+    $jesp->install();
+    $jesp->deploy();
 
 =cut
 
@@ -315,16 +316,20 @@ a json datastructure like this:
 
   {
     "patches": [
-        { "id":"foobartable", "sql": "CREATE TABLE foobar(id INT PRIMARY KEY)"},
-        { "id":"foobar_more", "file": "patches/morefoobar.sql" }
-        { "id":"foobar_abs",  "file": "/absolute/path/to/patches/evenmore.sql" },
+        { "id":"foobar_sql",        "sql":  "CREATE TABLE foobar(id INT PRIMARY KEY)"},
+        { "id":"foobar_rel",        "file": "patches/morefoobar.sql" }
+        { "id":"foobar_abs",        "file": "/absolute/path/to/patches/evenmore.sql" },
         { "id":"a_backfill_script", "file": "path/to/executable/file.sh" }
     ]
   }
 
-Patches MUST have a unique ID in all the plan, and they can either
-contain raw SQL (SQL key), or point to a file of your choice (in the JESP home)
-itself containing the SQL.
+Patches MUST have a unique C<id> in all the plan, and they can either contain raw SQL
+(C<sql> key), or point to a C<file> (absolute, or relative to the JESP home) containing
+the SQL.
+
+The C<id> is a VARCHAR(512). While it doesn't indicate any ordering, a simple and useful
+way to keep the IDs unique is to provide a date/timestamp (of when the patch was
+I<authored>) plus a free form description of the change.
 
 You are encouraged to look in L<https://github.com/jeteve/App-JESP/tree/master/t> for examples.
 
@@ -337,7 +342,7 @@ Simply add the SQL statement to execute in your patch structure:
   {
     "patches": [
         ...
-        { "id":"foobartable", "sql": "CREATE TABLE foobar(id INT PRIMARY KEY)"}
+        { "id":"2017-11-02: create table foobar", "sql": "CREATE TABLE foobar(id INT PRIMARY KEY)"}
         ...
   }
 
@@ -351,8 +356,8 @@ or relative to the directory that contains the plan.
   {
     "patches": [
          ...
-        { "id":"foobar_more", "file": "patches/morefoobar.sql" }
-        { "id":"foobar_abs",  "file": "/absolute/path/to/patches/evenmore.sql" },
+        { "id":"2017-11-08: (rel) more foobar", "file": "patches/morefoobar.sql" }
+        { "id":"2017-11-12: (abs) even more", "file": "/absolute/path/to/patches/evenmore.sql" },
          ...
     ]
   }
@@ -484,7 +489,7 @@ know what you're doing when you patch your DB.
 
 =head2 install
 
-Installs or upgrades the JESP meta tables in the database. This is idem potent.
+Installs or upgrades the JESP meta tables in the database. This is idempotent.
 Note that the JESP meta table(s) will be all prefixed by B<$this->prefix()>.
 
 Returns true on success. Will die on error.
