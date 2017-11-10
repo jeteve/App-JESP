@@ -294,14 +294,16 @@ Use the command line utility:
 
 Or use from your own program (in Perl):
 
-  my $jesp = App::JESP->new({ home => 'path/to/jesphome',
-                              dsn => ...,
-                              username => ...,
-                              password => ...
-                            });
+    my $jesp = App::JESP->new({
+        interactive => 0, # No ANSI color
+        home        => 'path/to/jesphome',
+        dsn         => ...,
+        username    => ...,
+        password    => ...
+    });
 
-  $jsep->install();
-  $jesp->deploy();
+    $jesp->install();
+    $jesp->deploy();
 
 =cut
 
@@ -319,16 +321,24 @@ a json datastructure like this:
 
   {
     "patches": [
-        { "id":"foobartable", "sql": "CREATE TABLE foobar(id INT PRIMARY KEY)"},
-        { "id":"foobar_more", "file": "patches/morefoobar.sql" }
-        { "id":"foobar_abs",  "file": "/absolute/path/to/patches/evenmore.sql" },
-        { "id":"a_backfill_script", "file": "path/to/executable/file.sh" }
-    ]
+        { "id":"foobar_sql",        "sql":  "CREATE TABLE foobar(id INT PRIMARY KEY)"},
+        { "id":"foobar_rel",        "file": "patches/morefoobar.sql" }
+        { "id":"foobar_abs",        "file": "/absolute/path/to/patches/evenmore.sql" },
+        { "id":"a_backfill_script", "file": "path/to/executable/file.sh" },
+    ],
   }
 
-Patches MUST have a unique ID in all the plan, and they can either
-contain raw SQL (SQL key), or point to a file of your choice (in the JESP home)
-itself containing the SQL.
+Patches MUST have a unique C<id> in all the plan, and they can either contain raw SQL
+(C<sql> key), or point to a C<file> (absolute, or relative to the JESP home) containing
+the SQL.
+
+The C<id> is a VARCHAR(512). While it doesn't indicate any ordering, a simple and useful
+way to keep the IDs unique is to provide a date/timestamp (of when the patch was
+I<authored>) plus a free form description of the change.
+
+The L<JSON> file is parsed with the relaxed flag, which means it can contain trailing
+commas (and # comments). The trailing commas are particularly useful, since commit diffs
+and merge conflicts will be contained to the new line that was added.
 
 You are encouraged to look in L<https://github.com/jeteve/App-JESP/tree/master/t> for examples.
 
@@ -341,7 +351,7 @@ Simply add the SQL statement to execute in your patch structure:
   {
     "patches": [
         ...
-        { "id":"foobartable", "sql": "CREATE TABLE foobar(id INT PRIMARY KEY)"}
+        { "id":"2017-11-02: create table foobar", "sql": "CREATE TABLE foobar(id INT PRIMARY KEY)"}
         ...
   }
 
@@ -355,8 +365,8 @@ or relative to the directory that contains the plan.
   {
     "patches": [
          ...
-        { "id":"foobar_more", "file": "patches/morefoobar.sql" }
-        { "id":"foobar_abs",  "file": "/absolute/path/to/patches/evenmore.sql" },
+        { "id":"2017-11-08: (rel) more foobar", "file": "patches/morefoobar.sql" }
+        { "id":"2017-11-12: (abs) even more", "file": "/absolute/path/to/patches/evenmore.sql" },
          ...
     ]
   }
@@ -375,7 +385,7 @@ Point to an EXECUTABLE file. (absolute or relative to the plan directory):
     ]
   }
 
-See L<APP::JESP::Driver#apply_script> to see what environment the script is ran in. Note that the script
+See L<APP::JESP::Driver#apply_script> to see what environment the script is being run in. Note that the script
 needs to be executable by the current user to be detected as a script.
 
 =head1 COMPATIBILITY
@@ -404,7 +414,7 @@ This will use a new connection to the Database to execute the patches.
 This is to allow you using BEGIN ; COMMIT; to make your patch transactional
 without colliding with the Meta data management transaction.
 
-=head2 Your own driver.
+=head2 Your own driver
 
 Should you want to write your own driver, simply extend L<App::JESP::Driver>
 and implement any method you like (most likely you will want apply_sql).
@@ -415,8 +425,8 @@ To use your driver, simply give its class to the constuctor:
 
 Or if you prefer to build an instance yourself:
 
-  my $jesp;
-  $jesp = App::JESP->new({ .., driver => My::App::JESP::Driver::SpecialDB->new({ jesp => $jesp,  ... ) });
+    my $jesp;
+    $jesp = App::JESP->new({ .., driver => My::App::JESP::Driver::SpecialDB->new({ jesp => $jesp,  ... ) });
 
 =head1 MOTIVATIONS & DESIGN
 
@@ -488,7 +498,7 @@ know what you're doing when you patch your DB.
 
 =head2 install
 
-Installs or upgrades the JESP meta tables in the database. This is idem potent.
+Installs or upgrades the JESP meta tables in the database. This is idempotent.
 Note that the JESP meta table(s) will be all prefixed by B<$this->prefix()>.
 
 Returns true on success. Will die on error.
@@ -536,7 +546,7 @@ Specify the patches to apply. This is useful in combination with C<force>
 
 Force patches applications, regardless of the fact they have been applied already or not.
 Note that it does not mean it's ok for the patches to fail. Any failing patch will still
-terminates the deploy method. This is particularly useful in combination with the 'patches'
+terminate the deploy method. This is particularly useful in combination with the 'patches'
 option where you can choose which patch to apply. Defaults to 0.
 
 =item logonly 1|0
