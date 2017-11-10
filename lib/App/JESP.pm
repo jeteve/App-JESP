@@ -5,6 +5,7 @@ use Moose;
 use App::JESP::Plan;
 use App::JESP::Colorizer;
 
+use JSON;
 use Class::Load;
 use DBI;
 use DBIx::Simple;
@@ -46,6 +47,9 @@ has 'driver' => ( is => 'ro', isa => 'App::JESP::Driver', lazy_build => 1 );
 
 has 'interactive' => ( is => 'ro' , isa => 'Bool' , lazy_build => 1 );
 has 'colorizer' => ( is => 'ro', isa => 'App::JESP::Colorizer', lazy_build => 1 );
+
+has json => ( is => "ro", lazy_build => 1 );
+sub _build_json { JSON->new->relaxed(1) }
 
 sub _build_driver{
     my ($self) = @_;
