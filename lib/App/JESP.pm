@@ -321,7 +321,7 @@ a json datastructure like this:
         { "id":"foobar_rel",        "file": "patches/morefoobar.sql" }
         { "id":"foobar_abs",        "file": "/absolute/path/to/patches/evenmore.sql" },
         { "id":"a_backfill_script", "file": "path/to/executable/file.sh" },
-    ]
+    ],
   }
 
 Patches MUST have a unique C<id> in all the plan, and they can either contain raw SQL
