@@ -16,6 +16,9 @@ cache:
     - $HOME/perl5/perlbrew/perls/$TRAVIS_PERL_VERSION/lib/site_perl/
     - $HOME/perl5/perlbrew/perls/$TRAVIS_PERL_VERSION/bin/
 
+before_install:
+  - sudo cp /etc/mysql/my.cnf /usr/share/mysql/my-default.cnf
+
 install:
   - echo $TRAVIS_PERL_VERSION
   - env | grep PERL
