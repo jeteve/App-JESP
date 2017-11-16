@@ -160,14 +160,22 @@ sub status{
     foreach my $plan_patch ( @$plan_patches ){
         if( my $applied_patch = delete $applied_patches->{$plan_patch->id()} ){
             $plan_patch->applied_datetime( $applied_patch->{applied_datetime} );
+            $log->info( $self->colorizer->colored('✔︎', "bold green")."  '".$plan_patch->id()."' - Applied on ".$plan_patch->applied_datetime() );
+        }else{
+            $log->info( $self->colorizer->colored('⚠', "bold yellow")."  '".$plan_patch->id()."' - Not applied" );
         }
     }
 
     my $meta_prefix = $self->prefix().'meta';
 
+    my $plan_orphans =  [ grep{ $_ !~ /^$meta_prefix/ }  keys %$applied_patches ];
+    if( @$plan_orphans ){
+        $log->warn($self->colorizer()->colored('⚠︎', "bold red")."  Got orphan patches (patches in meta table but not in plan): ".join(', ' , @$plan_orphans ) );
+    }
+
     return {
         plan_patches => $plan_patches,
-        plan_orphans => [ grep{ $_ !~ /^$meta_prefix/ }  keys %$applied_patches ]
+        plan_orphans => $plan_orphans,
     };
 }
 
